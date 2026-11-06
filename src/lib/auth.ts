@@ -1,13 +1,16 @@
 import "server-only";
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { and, count, eq, gt } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { db, schema } from "@/db";
 
 /*
  * Single-user admin auth.
- *  - ADMIN_PASSWORD_HASH: scrypt hash made with `npm run admin:hash`.
- *  - SESSION_SECRET: long random string used to sign the session cookie.
+ *  - ADMIN_PASSWORD_HASH: scrypt hash (from /admin/setup locally, or `npm run admin:hash`).
+ *  - SESSION_SECRET (optional): key that signs the session cookie. When it is
+ *    not set, the key is derived from ADMIN_PASSWORD_HASH, which is already a
+ *    secret with a random salt; changing the password then also logs out
+ *    every existing session.
  * The session is a signed, expiring token in an httpOnly, SameSite=Strict
  * cookie. Failed logins are counted in Postgres and limited per IP.
  */
@@ -18,11 +21,17 @@ const MAX_FAILS = 5;
 const WINDOW_MIN = 15;
 
 export function authConfigured() {
-  return Boolean(process.env.ADMIN_PASSWORD_HASH && (process.env.SESSION_SECRET?.length ?? 0) >= 32 && db);
+  return Boolean(process.env.ADMIN_PASSWORD_HASH?.startsWith("scrypt:") && db);
+}
+
+function sessionKey() {
+  const explicit = process.env.SESSION_SECRET;
+  if (explicit && explicit.length >= 32) return explicit;
+  return createHash("sha256").update(`dp-session-v1:${process.env.ADMIN_PASSWORD_HASH}`).digest();
 }
 
 function sign(payload: string) {
-  return createHmac("sha256", process.env.SESSION_SECRET!).update(payload).digest("base64url");
+  return createHmac("sha256", sessionKey()).update(payload).digest("base64url");
 }
 
 export function createSessionToken() {
@@ -31,7 +40,7 @@ export function createSessionToken() {
 }
 
 function validToken(token: string | undefined) {
-  if (!token || !process.env.SESSION_SECRET) return false;
+  if (!token || !authConfigured()) return false;
   const [payload, mac] = token.split(".");
   if (!payload || !mac) return false;
   const expected = Buffer.from(sign(payload));

@@ -29,7 +29,7 @@ Then open http://localhost:3000.
 
 Security:
 - one password, stored only as a scrypt hash (`ADMIN_PASSWORD_HASH`), compared in constant time
-- session in a signed (HMAC-SHA256), expiring, `HttpOnly`, `SameSite=Strict`, `Secure` cookie
+- session in a signed (HMAC-SHA256), expiring, `HttpOnly`, `SameSite=Strict`, `Secure` cookie; the signing key is `SESSION_SECRET` or, if unset, derived from the password hash
 - failed logins counted in the database: 5 failures per IP in 15 minutes locks login
 - write endpoints also reject cross-site `Origin` headers
 - all input validated with Zod; uploads checked by type, size (4 MB) and magic bytes
@@ -38,8 +38,8 @@ Security:
 Setup:
 
 ```bash
-cp .env.example .env.local   # fill DATABASE_URL, SESSION_SECRET, BLOB_READ_WRITE_TOKEN
-npm run admin:hash           # prints ADMIN_PASSWORD_HASH=...
+cp .env.example .env.local   # fill DATABASE_URL (Vercel sets it in production)
+npm run dev                  # then open /admin/setup to make ADMIN_PASSWORD_HASH (local only)
 npm run db:push              # create the tables
 npm run db:seed              # copy the current content into the database
 ```

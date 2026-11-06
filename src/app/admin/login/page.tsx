@@ -15,7 +15,8 @@ export default async function LoginPage() {
           <LoginForm />
         ) : (
           <p className="mt-6 leading-relaxed text-ink-2">
-            Admin is not configured. Set DATABASE_URL, ADMIN_PASSWORD_HASH and SESSION_SECRET (at least 32 characters).
+            Admin is not configured. Set DATABASE_URL and ADMIN_PASSWORD_HASH (make it at /admin/setup on your own
+            machine).
           </p>
         )}
       </div>
