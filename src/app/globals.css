@@ -1,0 +1,374 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --paper: #f2f0ea;
+  --paper-2: #e8e5dc;
+  --ink: #15140f;
+  --ink-2: #4a4840;
+  --ink-3: #85827a;
+  --line: #d4d0c4;
+  --accent: #d4431c;
+  --accent-soft: #f3d9cf;
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #0f0f0d;
+  --paper-2: #191915;
+  --ink: #edebe4;
+  --ink-2: #a9a69b;
+  --ink-3: #6c6a62;
+  --line: #2b2a25;
+  --accent: #ff6b3d;
+  --accent-soft: #3a1d12;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-display: var(--font-archivo), var(--font-plex-sans), sans-serif;
+}
+
+html {
+  background: var(--paper);
+}
+
+/* html carries the paper colour; body stays transparent so the fixed
+   background canvas (z-index -10) shows through. */
+body {
+  background: transparent;
+  overflow-x: clip;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+@layer components {
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .shell {
+    width: 100%;
+    max-width: 88rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 640px) {
+    .shell {
+      padding-inline: 2rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .shell {
+      padding-inline: 3rem;
+    }
+  }
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .link-underline:hover {
+    background-size: 100% 1px;
+  }
+}
+
+/* Floating glass header: see-through at the top, a little denser once scrolled. */
+.glass {
+  background: color-mix(in oklab, var(--paper) 38%, transparent);
+  border: 1px solid color-mix(in oklab, var(--ink) 9%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    0 10px 30px -18px rgb(0 0 0 / 0.35);
+  backdrop-filter: blur(14px) saturate(1.6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  transition:
+    background-color 0.3s,
+    box-shadow 0.3s;
+}
+.glass.is-solid {
+  background: color-mix(in oklab, var(--paper) 62%, transparent);
+}
+.dark .glass {
+  border-color: rgb(255 255 255 / 0.09);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 10px 30px -18px rgb(0 0 0 / 0.8);
+}
+
+/* Interactive hover: anything clickable grows a little and glitches once. */
+.hx {
+  transition:
+    scale 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.2s,
+    background-color 0.2s,
+    border-color 0.2s;
+}
+@media (hover: hover) {
+  .hx:hover {
+    scale: 1.045;
+    animation: hx-glitch 0.42s steps(1, end) 1;
+  }
+}
+@keyframes hx-glitch {
+  0% {
+    translate: 0 0;
+    text-shadow:
+      2px 0 var(--accent),
+      -2px 0 #22d3ee;
+  }
+  20% {
+    translate: -1.5px 1px;
+    text-shadow:
+      -2px 0 var(--accent),
+      2px 0 #22d3ee;
+    clip-path: inset(8% 0 38% 0);
+  }
+  40% {
+    translate: 1.5px -1px;
+    text-shadow:
+      2px 1px var(--accent),
+      -1px -1px #22d3ee;
+    clip-path: inset(52% 0 4% 0);
+  }
+  60% {
+    translate: -1px 0;
+    text-shadow:
+      1px 0 var(--accent),
+      -1px 0 #22d3ee;
+    clip-path: none;
+  }
+  80% {
+    translate: 0.5px 0;
+    text-shadow: none;
+  }
+  100% {
+    translate: 0 0;
+    text-shadow: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hx:hover {
+    animation: none;
+  }
+}
+
+/* Profile photo: locked (greyscale, scanlines, periodic glitch) until revealed. */
+.photo-glitch {
+  cursor: crosshair;
+}
+.photo-glitch .photo-base {
+  filter: grayscale(1) contrast(1.12) brightness(0.92);
+  transition: filter 0.5s ease 0.18s;
+}
+.photo-glitch.is-revealed .photo-base {
+  filter: none;
+}
+.photo-glitch .gl {
+  position: absolute;
+  inset: 0;
+  background-image: var(--src);
+  background-size: cover;
+  background-position: 50% 30%;
+  background-blend-mode: multiply;
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+}
+.photo-glitch .gl-r {
+  background-color: #ff2a55;
+}
+.photo-glitch .gl-c {
+  background-color: #19e3ff;
+}
+.photo-glitch:not(.is-revealed) .gl-r {
+  animation: gl-idle 3.8s steps(1, end) infinite;
+}
+.photo-glitch:not(.is-revealed) .gl-c {
+  animation: gl-idle 3.8s steps(1, end) infinite reverse;
+}
+.photo-glitch.is-burst .gl-r {
+  animation: gl-burst 0.6s steps(1, end) 1;
+}
+.photo-glitch.is-burst .gl-c {
+  animation: gl-burst 0.6s steps(1, end) 1 reverse;
+}
+.photo-scan {
+  background:
+    linear-gradient(to bottom, transparent 0%, color-mix(in oklab, var(--accent) 22%, transparent) 50%, transparent 100%) 0 -30% / 100% 30% no-repeat,
+    repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 0.2) 2px 3px);
+  animation: photo-scan 4.5s linear infinite;
+  transition: opacity 0.4s ease 0.2s;
+}
+.photo-glitch.is-revealed .photo-scan {
+  opacity: 0;
+}
+@keyframes photo-scan {
+  to {
+    background-position:
+      0 130%,
+      0 0;
+  }
+}
+@keyframes gl-idle {
+  0% {
+    opacity: 0.85;
+    transform: translateX(-6px);
+    clip-path: inset(14% 0 68% 0);
+  }
+  2% {
+    transform: translateX(7px);
+    clip-path: inset(46% 0 38% 0);
+  }
+  4% {
+    transform: translateX(-3px);
+    clip-path: inset(72% 0 10% 0);
+  }
+  6%,
+  100% {
+    opacity: 0;
+    transform: none;
+    clip-path: none;
+  }
+}
+@keyframes gl-burst {
+  0% {
+    opacity: 0.9;
+    transform: translateX(-12px);
+    clip-path: inset(5% 0 78% 0);
+  }
+  15% {
+    transform: translateX(9px);
+    clip-path: inset(28% 0 52% 0);
+  }
+  30% {
+    transform: translateX(-7px);
+    clip-path: inset(58% 0 22% 0);
+  }
+  45% {
+    transform: translateX(13px);
+    clip-path: inset(14% 0 62% 0);
+  }
+  60% {
+    transform: translateX(-5px);
+    clip-path: inset(80% 0 4% 0);
+  }
+  75% {
+    transform: translateX(4px);
+    clip-path: inset(38% 0 46% 0);
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+    clip-path: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .photo-glitch .gl,
+  .photo-scan {
+    animation: none !important;
+  }
+}
+
+/* Mirror photo used as a background figure: faded, scanlined, fading at the feet. */
+.mirror-figure {
+  opacity: 0.2;
+  mask-image:
+    repeating-linear-gradient(to bottom, #000 0 2px, rgb(0 0 0 / 0.45) 2px 4px),
+    linear-gradient(to bottom, #000 55%, transparent);
+  mask-composite: intersect;
+}
+.dark .mirror-figure {
+  opacity: 0.28;
+}
+
+/* Film grain */
+.grain {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.06;
+}
+.dark .grain {
+  opacity: 0.09;
+  filter: invert(1);
+}
+
+/* Hero log stream: columns of faint log lines drifting upward. */
+@keyframes stream-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+.log-stream {
+  mask-image: linear-gradient(to bottom, transparent, #000 25%, #000 65%, transparent);
+}
+.log-stream-col {
+  animation: stream-up var(--dur, 60s) linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .log-stream-col {
+    animation: none;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot {
+    animation: none;
+  }
+}
