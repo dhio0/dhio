@@ -31,6 +31,14 @@ export async function adminRoute(req: Request, fn: () => Promise<Response>, { wr
   }
 }
 
+/**
+ * Vercel Blob is usable with either a read-write token or, on newer stores,
+ * a store ID plus Vercel's OIDC token (which @vercel/blob picks up itself).
+ */
+export function blobConfigured() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
+}
+
 export function parseId(raw: string) {
   const id = Number(raw);
   return Number.isInteger(id) && id > 0 ? id : null;

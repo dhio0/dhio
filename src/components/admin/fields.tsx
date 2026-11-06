@@ -85,7 +85,7 @@ export function Upload({
   if (!enabled) {
     return (
       <p className="font-mono text-[0.7rem] text-ink-3">
-        Upload is off until BLOB_READ_WRITE_TOKEN is set. Paste a URL instead.
+        Upload is off until a Vercel Blob store is connected. Paste a URL instead.
       </p>
     );
   }

@@ -1,5 +1,5 @@
 import { put } from "@vercel/blob";
-import { adminRoute } from "@/lib/admin-api";
+import { adminRoute, blobConfigured } from "@/lib/admin-api";
 
 /*
  * POST /api/admin/upload (multipart, field "file").
@@ -28,8 +28,8 @@ export function POST(req: Request) {
   return adminRoute(
     req,
     async () => {
-      if (!process.env.BLOB_READ_WRITE_TOKEN) {
-        return Response.json({ error: "File storage is not configured (BLOB_READ_WRITE_TOKEN)" }, { status: 503 });
+      if (!blobConfigured()) {
+        return Response.json({ error: "File storage is not configured (Vercel Blob)" }, { status: 503 });
       }
       const form = await req.formData();
       const file = form.get("file");
