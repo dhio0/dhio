@@ -194,16 +194,17 @@ html.lenis body {
   }
 }
 
-/* Profile photo: locked (greyscale, scanlines, periodic glitch) until revealed. */
+/* Profile photo: the redacted image until revealed, then the real one swaps in mid-glitch. */
 .photo-glitch {
   cursor: crosshair;
 }
-.photo-glitch .photo-base {
-  filter: grayscale(1) contrast(1.12) brightness(0.92);
-  transition: filter 0.5s ease 0.18s;
+.photo-glitch .photo-real {
+  opacity: 0;
+  transition: opacity 0.12s steps(2, end);
 }
-.photo-glitch.is-revealed .photo-base {
-  filter: none;
+.photo-glitch.is-revealed .photo-real {
+  opacity: 1;
+  transition-delay: 0.28s;
 }
 .photo-glitch .gl {
   position: absolute;

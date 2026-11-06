@@ -6,11 +6,14 @@ import { useEffect, useRef, useState } from "react";
 import { ease } from "./motion";
 
 const SRC = "/profile/dhio-formal.webp";
+/** Same photo, darkened to a silhouette with a censor bar over the eyes. */
+const LOCKED = "/profile/dhio-locked.webp";
 
 /**
- * The profile photo, filed like an exhibit. It starts "locked": greyscale,
- * scanlined, with a periodic RGB-split glitch. Hovering (or, on touch screens,
- * scrolling it into view) plays a decrypt burst and reveals it in colour.
+ * The profile photo, filed like an exhibit. It starts "locked": a redacted,
+ * near-black version of the portrait, scanlined, with an RGB-split glitch that
+ * now and then flashes slices of the real face. Hovering (or, on touch screens,
+ * scrolling it into view) plays a decrypt burst and swaps in the real photo.
  */
 export function SubjectPhoto({ name, delay = 0.5 }: { name: string; delay?: number }) {
   const ref = useRef<HTMLElement>(null);
@@ -84,12 +87,20 @@ export function SubjectPhoto({ name, delay = 0.5 }: { name: string; delay?: numb
             transition={{ duration: 1.4, ease: [0.65, 0, 0.35, 1], delay: delay + 0.2 }}
           >
             <Image
+              src={LOCKED}
+              alt=""
+              fill
+              priority
+              sizes="(min-width: 1024px) 22vw, 176px"
+              className="object-cover object-[50%_30%]"
+            />
+            <Image
               src={SRC}
               alt={`Portrait of ${name}`}
               fill
               priority
               sizes="(min-width: 1024px) 22vw, 176px"
-              className="photo-base object-cover object-[50%_30%]"
+              className="photo-real object-cover object-[50%_30%]"
             />
             {/* RGB-split layers, only visible while glitching */}
             <span aria-hidden className="gl gl-r" />
