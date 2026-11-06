@@ -15,11 +15,36 @@ Then open http://localhost:3000.
 
 ## Structure
 
-- `src/lib/data.ts`: all site content (profile, projects, experience, certificates, skills)
-- `src/lib/repo.ts`: data access layer used by both the page and the API
+- `src/lib/data.ts`: profile, focus areas and skills, plus the fallback/seed content
+- `src/db/schema.ts`: Postgres tables (Drizzle ORM)
+- `src/lib/repo.ts`: data access layer used by the page, the public API and the admin API
+- `src/app/admin`, `src/components/admin`: the admin page
 - `src/app/api/*`: read-only REST API serving the same content as JSON
 - `src/components/*`: page sections and animation components
 - `public/`: screenshots, certificates and photos
+
+## Admin (single user)
+
+`/admin` lets me add, edit and remove projects, experience and certificates. Content lives in Postgres (Neon); uploads go to Vercel Blob. Without `DATABASE_URL` the site falls back to `src/lib/data.ts` and the admin stays off.
+
+Security:
+- one password, stored only as a scrypt hash (`ADMIN_PASSWORD_HASH`), compared in constant time
+- session in a signed (HMAC-SHA256), expiring, `HttpOnly`, `SameSite=Strict`, `Secure` cookie
+- failed logins counted in the database: 5 failures per IP in 15 minutes locks login
+- write endpoints also reject cross-site `Origin` headers
+- all input validated with Zod; uploads checked by type, size (4 MB) and magic bytes
+- `/admin` is `noindex` and `no-store`
+
+Setup:
+
+```bash
+cp .env.example .env.local   # fill DATABASE_URL, SESSION_SECRET, BLOB_READ_WRITE_TOKEN
+npm run admin:hash           # prints ADMIN_PASSWORD_HASH=...
+npm run db:push              # create the tables
+npm run db:seed              # copy the current content into the database
+```
+
+Writes from the admin call `revalidatePath("/")`, so the static home page updates without a redeploy.
 
 ## API
 
@@ -32,3 +57,5 @@ Then open http://localhost:3000.
 | `GET /api/experience` | Organisations and roles |
 | `GET /api/certifications` | Certificates |
 | `GET /api/skills` | Skills with where each was used |
+
+Admin endpoints (session required): `GET/POST /api/admin/{projects,roles,certifications}`, `PUT/DELETE /api/admin/{projects,roles,certifications}/{id}`, `POST /api/admin/upload`, `POST /api/auth/login`, `POST /api/auth/logout`.

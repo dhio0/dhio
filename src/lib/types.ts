@@ -31,7 +31,10 @@ export type Pillar = {
   tools: string[];
 };
 
+export type Img = { src: string; width: number; height: number };
+
 export type Project = {
+  id?: number;
   slug: string;
   code: string;
   title: string;
@@ -44,12 +47,15 @@ export type Project = {
   stack: string[];
   links: Link[];
   /** Full-width interactive showcase built from my own screenshots. */
-  showcase?: "webforensics" | "registry";
+  showcase?: "webforensics" | "registry" | null;
   /** Optional ordered steps drawn as a pipeline. */
-  pipeline?: { name: string; note: string }[];
+  pipeline?: { name: string; note: string }[] | null;
+  /** Screenshot for projects added later without a hand-built showcase. */
+  cover?: Img | null;
 };
 
 export type Role = {
+  id?: number;
   title: string;
   period: string;
   start: string;
@@ -67,6 +73,7 @@ export type Experience = {
 };
 
 export type Certification = {
+  id?: number;
   title: string;
   issuer: string;
   issued: string;
@@ -76,7 +83,7 @@ export type Certification = {
   verifyUrl?: string;
   /** The certificate itself (PDF under /public) and its preview image. */
   file?: string;
-  image?: { src: string; width: number; height: number };
+  image?: Img;
   grade?: string;
   /** Course titles for multi-course programmes, drawn as a completed track. */
   courses?: string[];

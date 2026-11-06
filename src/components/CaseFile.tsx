@@ -2,6 +2,7 @@
 
 import { motion, useScroll, useTransform } from "motion/react";
 import type { MotionValue } from "motion/react";
+import Image from "next/image";
 import { useRef } from "react";
 import type { Project } from "@/lib/types";
 import { DrawLine, Reveal, ease } from "./motion";
@@ -74,8 +75,9 @@ export function CaseFile({ project }: { project: Project }) {
 
         <div className="md:col-span-8">
           {project.pipeline && <Pipeline steps={project.pipeline} />}
+          {!project.showcase && !project.pipeline && project.cover && <Cover img={project.cover} title={project.title} />}
 
-          <div className={`grid gap-10 sm:grid-cols-2 ${project.pipeline ? "mt-12" : ""}`}>
+          <div className={`grid gap-10 sm:grid-cols-2 ${project.pipeline || (!project.showcase && project.cover) ? "mt-12" : ""}`}>
             <Reveal>
               <p className="label mb-3">Problem</p>
               <p className="leading-relaxed text-ink-2">{project.problem}</p>
@@ -109,6 +111,28 @@ export function CaseFile({ project }: { project: Project }) {
         </div>
       </div>
     </article>
+  );
+}
+
+/** Screenshot for projects added from the admin page: framed, revealed on scroll, slight parallax. */
+function Cover({ img, title }: { img: NonNullable<Project["cover"]>; title: string }) {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], ["-4%", "4%"]);
+  return (
+    <motion.figure
+      ref={ref}
+      className="relative overflow-hidden rounded-xl border border-line bg-paper-2 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.45)]"
+      style={{ aspectRatio: `${img.width} / ${img.height}` }}
+      initial={{ clipPath: "inset(14% 5% 14% 5% round 12px)", opacity: 0.4 }}
+      whileInView={{ clipPath: "inset(0% 0% 0% 0% round 12px)", opacity: 1 }}
+      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+      transition={{ duration: 1.1, ease }}
+    >
+      <motion.div style={{ y }} className="absolute inset-[-5%_0]">
+        <Image src={img.src} alt={`${title} screenshot`} fill sizes="(min-width: 768px) 60vw, 100vw" className="object-cover object-top" />
+      </motion.div>
+    </motion.figure>
   );
 }
 
